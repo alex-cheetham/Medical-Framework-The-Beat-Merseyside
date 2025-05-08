@@ -1,31 +1,148 @@
 body {
-    font-family: Arial, sans-serif;
-    background-color: rgba(0, 0, 0, 0.8);
-    color: white;
+    font-family: "Courier New", Courier, monospace;
+    background-color: black; /* Ensure the background stays black */
+    color: #0f0;
+    margin: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
 }
 
-#injury-display {
-    background: #222;
+#monitor {
+    background-color: #111;
+    color: #0f0;
     padding: 20px;
-    border-radius: 5px;
+    border: 3px solid #ff0;
+    border-radius: 10px;
+    width: 800px;
     text-align: center;
-    width: 300px;
+    box-shadow: 0 0 20px #ff0;
 }
 
-#injury-list {
+#monitor-header h1, #monitor-header h2 {
+    margin: 0;
+    padding: 0;
+    color: #ff0;
+}
+
+#patient-info {
+    margin: 20px 0;
+}
+
+#select-patient-btn {
+    background-color: #ff0;
+    color: #000;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+#select-patient-btn:hover {
+    background-color: #000;
+    color: #ff0;
+    border: 1px solid #ff0;
+}
+
+#vitals {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.vital {
+    background: #222;
+    padding: 10px;
+    border: 2px solid #0f0;
+    border-radius: 5px;
+    text-align: left;
+}
+
+.vital h3 {
+    margin: 0;
+    color: #ff0;
+}
+
+canvas {
+    width: 100%;
+    height: 50px;
+    background: #000;
+    border: 1px solid #0f0;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.treatment-btn {
+    background-color: #ff0;
+    color: #000;
+    border: none;
+    padding: 10px 15px;
+    margin: 5px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.treatment-btn:hover {
+    background-color: #000;
+    color: #ff0;
+    border: 1px solid #ff0;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #111;
+    color: #0f0;
+    padding: 20px;
+    border: 2px solid #ff0;
+    border-radius: 10px;
+    text-align: center;
+    width: 400px;
+}
+
+#player-list {
     list-style: none;
     padding: 0;
+    margin: 0;
 }
 
-#close-btn {
-    margin-top: 20px;
+#player-list li {
     padding: 10px;
-    background: red;
-    color: white;
+    border: 1px solid #0f0;
+    margin: 5px 0;
+    cursor: pointer;
+}
+
+#player-list li:hover {
+    background-color: #0f0;
+    color: #000;
+}
+
+#close-modal-btn {
+    margin-top: 20px;
+    padding: 10px 15px;
+    background-color: #ff0;
+    color: #000;
     border: none;
     cursor: pointer;
+    border-radius: 5px;
+}
+
+#injury-display {
+    display: none; /* Default to hidden */
 }
