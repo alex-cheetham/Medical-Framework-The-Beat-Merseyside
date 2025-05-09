@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EMS Medical Tablet</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen" style="display: none;">
+    <div class="login-container">
+      <img src="logo.png" alt="Logo" class="logo" />
+      <h2>EMS Login</h2>
+      <input type="text" value="ems.medic" disabled class="login-input" />
+      <input type="password" value="********" disabled class="login-input" />
+      <button id="login-button">Login</button>
+    </div>
+  </div>
+
+  <!-- HEALTH HUD -->
+  <div id="health-hud" style="display: none;">
+    <div class="health-bar-bg">
+      <div class="health-bar-fill" id="health-bar-fill"></div>
+    </div>
+  </div>
+
+  <!-- MAIN UI -->
+  <div id="nui-wrapper" style="display: none;">
+    <div class="tablet-container">
+      <div class="logo-container">
+        <img src="logo.png" alt="The Beat Merseyside Logo" class="logo" />
+      </div>
+
+      <div class="header">🩺 EMS Medical Tablet</div>
+
+      <div class="section">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h2 style="margin: 0;">Patient Information</h2>
+          <div id="patient-button-container">
+            <button class="tab-button" onclick="openPatientMenu()">Select Patient</button>
+          </div>
+        </div>
+        <div class="patient-info">
+          Name: John Doe<br />
+          ID: 10123<br />
+          Status: Unconscious
+        </div>
+      </div>
+
+      <!-- Treatments Section -->
+      <div class="section">
+        <h2>Treatments</h2>
+        <div class="tab-menu">
+          <button class="tab-button" onclick="openTab('medications')">Medications</button>
+          <button class="tab-button" onclick="openTab('bandages')">Bandages</button>
+          <button class="tab-button" onclick="openTab('infusions')">Infusions</button>
+          <button class="tab-button" onclick="openTab('defib')">Defib</button>
+        </div>
+
+        <div id="medications" class="tab-content">
+          <div class="button-list">
+            <button class="action-button med-button">💊 Paracetamol</button>
+            <button class="action-button med-button">💊 Ibuprofen</button>
+            <button class="action-button med-button">💊 Morphine Sulfate</button>
+            <button class="action-button med-button">💊 GTN Spray</button>
+            <button class="action-button med-button">💊 Salbutamol Inhaler</button>
+          </div>
+        </div>
+
+        <div id="bandages" class="tab-content" style="display: none;">
+          <div class="button-list">
+            <button class="action-button bandage-button">🩹 Adhesive Plaster</button>
+            <button class="action-button bandage-button">🩹 Gauze Pad</button>
+            <button class="action-button bandage-button">🩹 Elastic Bandage</button>
+            <button class="action-button bandage-button">🩹 Trauma Dressing</button>
+            <button class="action-button bandage-button">🩹 Tourniquet (TQ)</button>
+            <button class="action-button bandage-button">🩹 QuickClot</button>
+            <button class="action-button bandage-button">🩹 Splint</button>
+          </div>
+        </div>
+
+        <div id="infusions" class="tab-content" style="display: none;">
+          <div class="button-list">
+            <button class="action-button infusion-button">💧 0.9% Normal Saline</button>
+            <button class="action-button infusion-button">💧 Ringer's Lactate</button>
+            <button class="action-button infusion-button">💧 Dextrose 5%</button>
+            <button class="action-button infusion-button">💧 Sodium Bicarbonate</button>
+          </div>
+        </div>
+
+        <div id="defib" class="tab-content" style="display: none;">
+          <div class="defib-vitals">
+            <p><strong>Heart Rate:</strong> 42 BPM</p>
+            <p><strong>Blood Pressure:</strong> 90/60</p>
+            <p><strong>SPO2:</strong> 87%</p>
+            <p><strong>Resp Rate:</strong> 18</p>
+            <p><strong>Heart Rhythm:</strong> Sinus Bradycardia</p>
+          </div>
+          <div class="defib-controls">
+            <button class="defib-button">Analyze</button>
+            <button class="defib-button">Charge</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charge Modal -->
+    <div id="charge-modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <h3>Set Charge Level (Joules)</h3>
+        <input type="number" id="charge-input" placeholder="Enter joules..." min="1" max="360" />
+        <div id="charge-progress" class="charge-bar" style="display: none;">
+          <div id="charge-fill" class="charge-fill"></div>
+        </div>
+        <div class="modal-buttons">
+          <button onclick="confirmCharge()">Charge</button>
+          <button onclick="closeChargeModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shock Modal -->
+    <div id="shock-modal" class="modal" style="display: none;">
+      <div class="modal-content pulse-once">
+        <h3>Shock Ready</h3>
+        <button id="shock-button" class="shock-circle">SHOCK</button>
+      </div>
+    </div>
+
+    <!-- Flicker Overlay -->
+    <div id="flicker-overlay" style="display: none;"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
