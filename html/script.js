@@ -1,242 +1,170 @@
-const injuryState = {
-  health: 100,
-  pulse: 0,
-  bp: "0/0",
-  o2: 0,
-  injuries: []
-};
 
-const defibState = {
-  isCharged: false,
-  chargeLevel: 0
-};
+// Clear UI on tablet close or reset
+function clearPatientDisplay() {
+    const patientInfo = document.querySelector(".patient-info");
+    const injuryInfo = document.querySelector(".injury-info");
+    const vitals = document.querySelector("#defib .defib-vitals");
 
-function updateHealthBar(value) {
-  const bar = document.getElementById("health-bar-fill");
-  const hud = document.getElementById("health-hud");
-
-  if (!bar || !hud) return;
-
-  // Show the health bar when health changes
-  hud.style.display = "block";
-  bar.style.width = `${value}%`;
-
-  if (value > 60) {
-    bar.style.backgroundColor = "limegreen";
-  } else if (value > 30) {
-    bar.style.backgroundColor = "orange";
-  } else {
-    bar.style.backgroundColor = "red";
-  }
-}
-
-function renderInjuries() {
-  const container = document.querySelector(".injury-list");
-  if (!container) return;
-
-  container.innerHTML = "";
-  injuryState.injuries.forEach(injury => {
-    const div = document.createElement("div");
-    div.className = "injury-item";
-    div.textContent = `${injury.limb}: ${injury.type}`;
-    container.appendChild(div);
-  });
-}
-
-function renderVitals() {
-  const vitalsContainer = document.querySelector(".vitals");
-  if (!vitalsContainer) return;
-
-  vitalsContainer.innerHTML = `
-    <div class="vital-item">Health: ${injuryState.health}%</div>
-    <div class="vital-item">Pulse: ${injuryState.pulse} BPM</div>
-    <div class="vital-item">BP: ${injuryState.bp}</div>
-    <div class="vital-item">O2: ${injuryState.o2}%</div>
-  `;
-}
-
-function getHealthStatus() {
-  if (injuryState.health <= 0) return "Deceased";
-  if (injuryState.pulse < 40 || injuryState.o2 < 80) return "Critical";
-  const bleeding = injuryState.injuries.find(i => i.type === "Bleeding");
-  return bleeding ? "Unstable" : "Stable";
-}
-
-function renderPatientStatus() {
-  const patientInfo = document.querySelector(".patient-info");
-  if (!patientInfo) return;
-
-  patientInfo.innerHTML = `
-    Name: John Doe<br>
-    ID: 10123<br>
-    Status: ${getHealthStatus()}
-  `;
-}
-
-function renderUI() {
-  renderInjuries();
-  renderVitals();
-  renderPatientStatus();
-}
-
-function closeTablet() {
-  document.getElementById("nui-wrapper").style.display = "none";
-  fetch(`https://${GetParentResourceName()}/closeTablet`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({})
-  });
-}
-
-window.addEventListener("message", function(event) {
-  if (event.data.type === "openTablet") {
-    document.getElementById("login-screen").style.display = "flex";
-  }
-
-  if (event.data.type === "updateHealth") {
-    injuryState.health = event.data.health;
-    updateHealthBar(injuryState.health);
-    renderVitals();
-  }
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("login-button").addEventListener("click", () => {
-    document.getElementById("login-screen").style.display = "none";
-    document.getElementById("nui-wrapper").style.display = "flex";
-  });
-
-  document.querySelectorAll(".action-button").forEach(button => {
-    button.addEventListener("click", () => {
-      const item = button.textContent;
-      fetch(`https://${GetParentResourceName()}/useItem`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ item })
-      });
-    });
-  });
-
-  document.querySelectorAll(".defib-button").forEach(button => {
-    const label = button.textContent;
-    if (label === "Charge") {
-      button.addEventListener("click", openChargeModal);
-    } else if (label === "Analyze") {
-      fetch(`https://${GetParentResourceName()}/defibAction`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: label })
-      });
+    if (patientInfo) {
+        patientInfo.innerHTML = `<em>No patient selected.</em>`;
     }
-  });
+    if (injuryInfo) {
+        injuryInfo.innerHTML = `<strong>Injuries:</strong><br /><em>None</em>`;
+    }
+    if (vitals) {
+        vitals.innerHTML = `
+            <p><strong>Heart Rate:</strong> <em>—</em></p>
+            <p><strong>Blood Pressure:</strong> <em>—</em></p>
+            <p><strong>SPO2:</strong> <em>—</em></p>
+            <p><strong>Resp Rate:</strong> <em>—</em></p>
+            <p><strong>Heart Rhythm:</strong> <em>—</em></p>
+        `;
+    }
+}
 
-  const shockButton = document.getElementById("shock-button");
-  if (shockButton) {
-    shockButton.addEventListener("click", () => {
-      if (!defibState.isCharged) {
-        alert("Defib is not charged!");
-        return;
-      }
+// Handle tablet open and updates
+window.addEventListener("message", function(event) {
+    const data = event.data;
 
-      fetch(`https://${GetParentResourceName()}/defibShock`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ joules: defibState.chargeLevel })
-      });
+    if (data.type === "openTablet") {
+        document.getElementById("nui-wrapper").style.display = "block";
+        document.getElementById("login-screen").style.display = "block";
+        initTreatmentHooks();
+    }
 
-      defibState.isCharged = false;
-      defibState.chargeLevel = 0;
-      closeShockModal();
-      triggerScreenFlicker();
-    });
-  }
+    if (data.action === "updateInjuries") {
+        const injurySection = document.querySelector(".injury-info");
+        if (injurySection) {
+            const list = data.injuries || [];
+            injurySection.innerHTML = "<strong>Injuries:</strong><br>" + list.join("<br>");
+        }
+    }
+
+    if (data.action === "updateVitals") {
+        const vitals = data.vitals || {};
+        document.querySelector("#defib .defib-vitals").innerHTML = `
+            <p><strong>Heart Rate:</strong> ${vitals.heartRate || 'N/A'} BPM</p>
+            <p><strong>Blood Pressure:</strong> ${vitals.bloodPressure || 'N/A'}</p>
+            <p><strong>SPO2:</strong> ${vitals.spo2 || 'N/A'}%</p>
+            <p><strong>Resp Rate:</strong> ${vitals.respRate || 'N/A'}</p>
+            <p><strong>Heart Rhythm:</strong> ${vitals.rhythm || 'N/A'}</p>
+        `;
+    }
 });
 
-// Add an event listener to close the tablet when Escape key is pressed
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && document.getElementById("nui-wrapper").style.display !== "none") {
-    closeTablet();
-  }
-});
-
-function openTab(tabName) {
-  document.querySelectorAll(".tab-content").forEach(tab => {
-    tab.style.display = "none";
-  });
-  document.getElementById(tabName).style.display = "block";
-}
-
-function openChargeModal() {
-  document.getElementById("charge-modal").style.display = "flex";
-}
-
-function closeChargeModal() {
-  document.getElementById("charge-modal").style.display = "none";
-}
-
-function openShockModal() {
-  const modal = document.getElementById("shock-modal");
-  const content = modal.querySelector(".modal-content");
-  content.classList.add("pulse-once");
-  modal.style.display = "flex";
-
-  setTimeout(() => {
-    content.classList.remove("pulse-once");
-  }, 1000);
-}
-
-function closeShockModal() {
-  document.getElementById("shock-modal").style.display = "none";
-}
-
-function confirmCharge() {
-  const joules = parseInt(document.getElementById("charge-input").value);
-  const progress = document.getElementById("charge-progress");
-  const fill = document.getElementById("charge-fill");
-
-  if (isNaN(joules) || joules < 1 || joules > 360) {
-    alert("Please enter a valid number between 1 and 360.");
-    return;
-  }
-
-  fill.style.width = "0%";
-  progress.style.display = "block";
-
-  setTimeout(() => {
-    fill.style.width = "100%";
-  }, 10);
-
-  setTimeout(() => {
-    defibState.chargeLevel = joules;
-    defibState.isCharged = true;
-
-    progress.style.display = "none";
-    closeChargeModal();
-    openShockModal();
-  }, 3000);
-}
-
-function triggerScreenFlicker() {
-  const overlay = document.getElementById("flicker-overlay");
-  overlay.style.animation = "screen-flicker 0.3s ease-in-out";
-  overlay.style.display = "block";
-
-  setTimeout(() => {
-    overlay.style.display = "none";
-    overlay.style.animation = "none";
-  }, 300);
-}
-
-// Patient Button Logic
 function openPatientMenu() {
-  // Simulate player selection
-  setTimeout(() => {
-    document.getElementById("patient-button-container").innerHTML = `
-      <button class="tab-button" onclick="requestPatientDetails()">Request Patient Details</button>
-    `;
-  }, 500);
+    fetch(`https://${GetParentResourceName()}/getPlayers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+    })
+    .then(res => res.json())
+    .then(data => {
+        const list = data.players || [];
+        const container = document.getElementById("patient-list");
+        if (!container) return console.error("Missing #patient-list element.");
+
+        container.innerHTML = "";
+
+        if (list.length === 0) {
+            container.innerHTML = "<div>No active players found.</div>";
+        }
+
+        list.forEach(player => {
+            const btn = document.createElement("button");
+            btn.className = "patient-button";
+            btn.innerText = `ID: ${player.id} - ${player.name}`;
+            btn.onclick = () => {
+                const status =
+                    player.health <= 0 ? "Unconscious" :
+                    player.health <= 30 ? "Critical" : "Stable";
+
+                const patientInfo = document.querySelector(".patient-info");
+                if (patientInfo) {
+                    patientInfo.innerHTML = `Name: ${player.name}<br />
+ID: ${player.id}<br />
+Status: ${status}`;
+                }
+
+                fetch(`https://${GetParentResourceName()}/selectPlayer`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: player.id })
+                })
+                .then(res => res.json())
+                .then(response => {
+                    const injuryList = response.injuries || [];
+                    const injurySection = document.querySelector(".injury-info");
+                    if (injurySection) {
+                        injurySection.innerHTML = "<strong>Injuries:</strong><br>" + injuryList.join("<br>");
+                    }
+                });
+
+                document.getElementById("patient-menu").style.display = "none";
+            };
+            container.appendChild(btn);
+        });
+
+        document.getElementById("patient-menu").style.display = "block";
+    });
 }
 
-function requestPatientDetails() {
-  alert("Request sent to patient for medical data.");
+function openTab(tabId) {
+    const tabs = document.querySelectorAll(".tab-content");
+    tabs.forEach(tab => tab.style.display = "none");
+
+    const active = document.getElementById(tabId);
+    if (active) {
+        active.style.display = "block";
+
+        if (tabId === "defib") {
+            const shockBtn = document.getElementById("shock-button");
+            if (shockBtn && !shockBtn.dataset.hooked) {
+                shockBtn.addEventListener("click", () => {
+                    fetch(`https://${GetParentResourceName()}/shockPlayer`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({})
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        alert(data.message);
+                    });
+                });
+                shockBtn.dataset.hooked = "true";
+            }
+        }
+    }
 }
+
+function addTestInjury() {
+    fetch(`https://${GetParentResourceName()}/applyTestInjury`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+    });
+}
+
+function applyTreatment(category, name) {
+    fetch(`https://${GetParentResourceName()}/applyTreatment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: category, name: name })
+    });
+}
+
+function initTreatmentHooks() {
+    document.querySelectorAll(".med-button").forEach(btn => {
+        btn.onclick = () => applyTreatment("Medication", btn.innerText.trim());
+    });
+    document.querySelectorAll(".bandage-button").forEach(btn => {
+        btn.onclick = () => applyTreatment("Bandage", btn.innerText.trim());
+    });
+    document.querySelectorAll(".infusion-button").forEach(btn => {
+        btn.onclick = () => applyTreatment("Infusion", btn.innerText.trim());
+    });
+}
+
+document.getElementById("login-button").addEventListener("click", () => {
+    document.getElementById("login-screen").style.display = "none";
+});

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,18 +19,18 @@
     </div>
   </div>
 
-  <!-- HEALTH HUD -->
-  <div id="health-hud" style="display: none;">
-    <div class="health-bar-bg">
-      <div class="health-bar-fill" id="health-bar-fill"></div>
-    </div>
-  </div>
-
   <!-- MAIN UI -->
   <div id="nui-wrapper" style="display: none;">
     <div class="tablet-container">
       <div class="logo-container">
         <img src="logo.png" alt="The Beat Merseyside Logo" class="logo" />
+      </div>
+
+      <!-- Patient Selection Modal -->
+      <div id="patient-menu" style="display:none; position: absolute; top: 10%; left: 10%; background: #222; padding: 20px; color: white; border: 1px solid #555; z-index: 999;">
+        <h3>Select a Patient</h3>
+        <div id="patient-list" style="max-height: 300px; overflow-y: auto;"></div>
+        <button onclick="document.getElementById('patient-menu').style.display='none'">Close</button>
       </div>
 
       <div class="header">🩺 EMS Medical Tablet</div>
@@ -42,13 +43,17 @@
           </div>
         </div>
         <div class="patient-info">
-          Name: John Doe<br />
-          ID: 10123<br />
-          Status: Unconscious
+          <em>No patient selected.</em>
+        </div>
+        <div style="margin-top: 10px;">
+          <button class="tab-button" onclick="addTestInjury()">🧪 Apply Test Injury</button>
+        </div>
+        <div class="injury-info">
+          <strong>Injuries:</strong><br />
+          <em>None</em>
         </div>
       </div>
 
-      <!-- Treatments Section -->
       <div class="section">
         <h2>Treatments</h2>
         <div class="tab-menu">
@@ -91,11 +96,11 @@
 
         <div id="defib" class="tab-content" style="display: none;">
           <div class="defib-vitals">
-            <p><strong>Heart Rate:</strong> 42 BPM</p>
-            <p><strong>Blood Pressure:</strong> 90/60</p>
-            <p><strong>SPO2:</strong> 87%</p>
-            <p><strong>Resp Rate:</strong> 18</p>
-            <p><strong>Heart Rhythm:</strong> Sinus Bradycardia</p>
+            <p><strong>Heart Rate:</strong> <em>—</em></p>
+            <p><strong>Blood Pressure:</strong> <em>—</em></p>
+            <p><strong>SPO2:</strong> <em>—</em></p>
+            <p><strong>Resp Rate:</strong> <em>—</em></p>
+            <p><strong>Heart Rhythm:</strong> <em>—</em></p>
           </div>
           <div class="defib-controls">
             <button class="defib-button">Analyze</button>
@@ -104,32 +109,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Charge Modal -->
-    <div id="charge-modal" class="modal" style="display: none;">
-      <div class="modal-content">
-        <h3>Set Charge Level (Joules)</h3>
-        <input type="number" id="charge-input" placeholder="Enter joules..." min="1" max="360" />
-        <div id="charge-progress" class="charge-bar" style="display: none;">
-          <div id="charge-fill" class="charge-fill"></div>
-        </div>
-        <div class="modal-buttons">
-          <button onclick="confirmCharge()">Charge</button>
-          <button onclick="closeChargeModal()">Cancel</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Shock Modal -->
-    <div id="shock-modal" class="modal" style="display: none;">
-      <div class="modal-content pulse-once">
-        <h3>Shock Ready</h3>
-        <button id="shock-button" class="shock-circle">SHOCK</button>
-      </div>
-    </div>
-
-    <!-- Flicker Overlay -->
-    <div id="flicker-overlay" style="display: none;"></div>
   </div>
 
   <script src="script.js"></script>
